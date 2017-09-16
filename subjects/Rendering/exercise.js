@@ -31,14 +31,17 @@ const DATA = {
 class Menu extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      sortAscending: true
+    }
   }
 
   filterItems = (items, type) => {
     const filteredItems = type ? items.filter(item => item.type === type) : items
+    const sortDirection = this.state.sortAscending ? sortBy('name') : sortBy('-name')
 
     return filteredItems
-            .sort(sortBy('name'))
+            .sort(sortDirection)
             .map(item => <li key={item.id}>{item.name}</li>)
   }
 
@@ -58,6 +61,10 @@ class Menu extends React.Component {
     this.setState({ type: event.target.value })
   }
 
+  toggleSortOrder = () => {
+    this.setState({ sortAscending: !this.state.sortAscending })
+  }
+
   render() {
     const items = this.filterItems(DATA.items, this.state.type)
     const types = this.buildTypeOptions(DATA.items)
@@ -65,12 +72,19 @@ class Menu extends React.Component {
     return (
       <div>
         <h1>{DATA.title}</h1>
-        <select defaultValue="default" onChange={this.handleTypeChange}>
-          {types}
-        </select>
-        <ul>
-          {items}
-        </ul>
+        <div>
+          <button onClick={this.toggleSortOrder}>Toggle Sort Order</button>
+        </div>
+        <div>
+          <select defaultValue="default" onChange={this.handleTypeChange}>
+            {types}
+          </select>
+        </div>
+        <div>
+          <ul>
+            {items}
+          </ul>
+        </div>
       </div>
     )
   }
