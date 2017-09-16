@@ -28,14 +28,47 @@ const DATA = {
   ]
 }
 
-function Menu() {
-const items = DATA.items
-                  .filter(item => item.type === 'mexican')
-                  .sort(sortBy('name'))
-                  .map(item => <li key={item.id}>{item.name}</li>)
+function updateThePage(type) {
+  ReactDOM.render(<Menu type={type}/>, document.getElementById('app'), () => {
+    require('./tests').run()
+  })
+}
+
+function handleTypeChange(event) {
+  updateThePage(event.target.value)
+}
+
+function buildTypeOptions() {
+  const defaultOption = <option key="default" disabled value="default"> -- select an option -- </option>
+
+  const typeNameArray = [ ...new Set(DATA.items.map(item => item.type)) ]
+
+  const typeOptions = typeNameArray
+                          .sort()
+                          .map(type => <option key={type} value={type}>{type}</option>)
+
+  return [ defaultOption, ...typeOptions ]
+}
+
+function filterItems(items, type) {
+  const filteredItems = type ? items.filter(item => item.type === type) : items
+
+  return filteredItems
+          .sort(sortBy('name'))
+          .map(item => <li key={item.id}>{item.name}</li>)
+}
+
+function Menu(props) {
+  const items = filterItems(DATA.items, props.type)
+
+  const types = buildTypeOptions()
+
   return (
     <div>
       <h1>{DATA.title}</h1>
+      <select defaultValue="default" onChange={handleTypeChange}>
+        {types}
+      </select>
       <ul>
         {items}
       </ul>
@@ -43,6 +76,4 @@ const items = DATA.items
   )
 }
 
-ReactDOM.render(<Menu/>, document.getElementById('app'), () => {
-  require('./tests').run()
-})
+updateThePage()
