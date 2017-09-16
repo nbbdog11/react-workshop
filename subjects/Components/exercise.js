@@ -35,17 +35,40 @@ styles.panel = {
 }
 
 class Tabs extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      activeIndex: 0
+    }
+  }
+
+  setActiveIndex = (id) => {
+    this.setState({ activeIndex: id })
+  }
+
+  buildTab = (element, index) => {
+    const id = element.id
+    const style = this.state.activeIndex === index ? styles.activeTab : styles.tab
+
+    return (
+      <div
+        className="Tab"
+        key={index}
+        onClick = {() => this.setActiveIndex(index)}
+        style={style}>{element.name}</div>
+    )
+  }
+
   render() {
+    const { activeIndex } = this.state
+    const tabs = this.props.data.map(this.buildTab)
+    const activeDescription = this.props.data[activeIndex].description
+
     return (
       <div className="Tabs">
-        <div className="Tab" style={styles.activeTab}>
-          Active
-        </div>
-        <div className="Tab" style={styles.tab}>
-          Inactive
-        </div>
+        {tabs}
         <div className="TabPanel" style={styles.panel}>
-          Panel
+          {activeDescription}
         </div>
       </div>
     )
