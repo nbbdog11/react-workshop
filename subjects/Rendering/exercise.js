@@ -29,9 +29,16 @@ const DATA = {
 }
 
 function Menu() {
+const items = DATA.items
+                  .filter(item => item.type === 'mexican')
+                  .sort(sortBy('name'))
+                  .map(item => <li key={item.id}>{item.name}</li>)
   return (
     <div>
-      Open the console, you have failing tests.
+      <h1>{DATA.title}</h1>
+      <ul>
+        {items}
+      </ul>
     </div>
   )
 }
