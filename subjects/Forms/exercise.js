@@ -20,31 +20,77 @@ import ReactDOM from 'react-dom'
 import serializeForm from 'form-serialize'
 
 class CheckoutForm extends React.Component {
+  state = {
+    billingName: '',
+    billingState: '',
+    shippingName: '',
+    shippingState: '',
+    shippingSameAsBilling: false
+  }
+
+  handleSubmit = (event) => {
+    event.preventDefault()
+
+    const formValues = serializeForm(event.target, { hash: true })
+
+    console.log(formValues)
+  }
+
+  toggleShippingSameAsBilling = (event) => {
+    this.setState({ shippingSameAsBilling: event.target.checked })
+  }
+
   render() {
+    const { billingName, billingState, shippingName, shippingState, shippingSameAsBilling } = this.state
     return (
       <div>
         <h1>Checkout</h1>
-        <form>
+        <form onSubmit={this.handleSubmit}>
           <fieldset>
             <legend>Billing Address</legend>
             <p>
-              <label>Billing Name: <input type="text"/></label>
+              <label>Billing Name:
+                <input
+                  type="text"
+                  name="billingName"
+                  onChange={event => this.setState({ billingName: event.target.value })}/></label>
             </p>
             <p>
-              <label>Billing State: <input type="text" size="2"/></label>
+              <label>Billing State:
+                <input
+                  type="text"
+                  size="2"
+                  name="billingState"
+                  onChange={event => this.setState({ billingState: event.target.value })}/></label>
             </p>
           </fieldset>
 
           <br/>
 
           <fieldset>
-            <label><input type="checkbox"/> Same as billing</label>
+            <label>
+              <input
+                type="checkbox"
+                onChange={this.toggleShippingSameAsBilling}/> Same as billing</label>
             <legend>Shipping Address</legend>
             <p>
-              <label>Shipping Name: <input type="text"/></label>
+              <label>Shipping Name:
+                <input
+                  type="text"
+                  name="shippingName"
+                  onChange={event => this.setState({ shippingName: event.target.value })}
+                  readOnly={shippingSameAsBilling}
+                  value={shippingSameAsBilling ? billingName : shippingName}/></label>
             </p>
             <p>
-              <label>Shipping State: <input type="text" size="2"/></label>
+              <label>Shipping State:
+                <input
+                  type="text"
+                  size="2"
+                  name="shippingState"
+                  onChange={event => this.setState({ shippingState: event.target.value })}
+                  readOnly={shippingSameAsBilling}
+                  value={shippingSameAsBilling ? billingState : shippingState}/></label>
             </p>
           </fieldset>
 
