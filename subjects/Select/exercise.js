@@ -18,13 +18,69 @@ class Select extends React.Component {
     defaultValue: any
   }
 
+  state = {
+    showChildren: false,
+    value: this.props.defaultValue || null
+  }
+
+  handleSelect = value => {
+    const nextState = {
+      showChildren: false
+    }
+
+    if(this.isUncontrolled()) {
+      nextState.value = value
+    }
+
+    this.setState(nextState, () => {
+      if (this.props.onChange)
+        this.props.onChange(value)
+    })
+  }
+
+  isUncontrolled = () => this.props.value == null
+
+  toggleChildren = event => {
+    event.preventDefault()
+    this.setState({
+      showChildren: !this.state.showChildren
+    })
+  }
+
+  getChildren = () => {
+    return React.Children.map(this.props.children, child => (
+      React.cloneElement(child, {
+        onSelect: value => this.handleSelect(value)
+      })
+    ))
+  }
+
+  getLabel = () => {
+    let label = null
+
+    React.Children.forEach(this.props.children, (child) => {
+      const childValue = child.props.value
+
+      if (
+        (this.isUncontrolled() && childValue === this.state.value) ||
+        (child.props.value === this.props.value)
+      ) {
+        label = child.props.children
+      }
+    })
+
+    return label
+  }
+
   render() {
     return (
-      <div className="select">
-        <div className="label">label <span className="arrow">▾</span></div>
-        <div className="options">
-          {this.props.children}
-        </div>
+      <div className="select" onClick={this.toggleChildren}>
+        <div className="label">{this.getLabel()}<span className="arrow">▾</span></div>
+        {this.state.showChildren && (
+          <div className="options">
+            {this.getChildren()}
+          </div>
+        )}
       </div>
     )
   }
@@ -32,9 +88,17 @@ class Select extends React.Component {
 
 
 class Option extends React.Component {
+  handleClick = (event) => {
+    const { onSelect, value } = this.props
+    event.preventDefault()
+    onSelect(value)
+  }
+
   render() {
     return (
-      <div className="option">{this.props.children}</div>
+      <div
+        className="option"
+        onClick={this.handleClick}>{this.props.children}</div>
     )
   }
 }
