@@ -34,6 +34,8 @@ const USERS = [
   { id: 2, name: 'Michael Jackson', email: 'mjijackson@gmail.com' }
 ]
 
+const goHomeLink = (<p><Link to="/">Go home</Link></p>)
+
 function getUserByID(id) {
   for (let i = 0; i < USERS.length; ++i)
     if (USERS[i].id === parseInt(id, 10))
@@ -45,7 +47,9 @@ function getUserByID(id) {
 class Home extends React.Component {
   render() {
     const contactItems = USERS.map(user => (
-      <li key={user.email}>{user.name}</li>
+      <li key={user.email}>
+        <Link to={`/profile/${user.id}`}>{user.name}</Link>
+      </li>
     ))
 
     return (
@@ -59,15 +63,22 @@ class Home extends React.Component {
 
 class Profile extends React.Component {
   render() {
-    const userId = 1 // TODO: Get this from the URL!
+    const { match } = this.props
+    const { userId } = match.params
     const user = getUserByID(userId)
 
     if (user == null)
-      return <p>Cannot find user with id {userId}</p>
+      return (
+        <div>
+          <p>Cannot find user with id {userId}</p>
+          {goHomeLink}
+        </div>
+      )
 
     return (
       <div className="profile">
         <Gravatar email={user.email}/> {user.name}
+        {goHomeLink}
       </div>
     )
   }
@@ -78,7 +89,7 @@ class NoMatch extends React.Component {
     return (
       <div>
         <h1>No routes matched...</h1>
-        <p><Link to="/">Go home</Link></p>
+        {goHomeLink}
       </div>
     )
   }
@@ -87,10 +98,19 @@ class NoMatch extends React.Component {
 class App extends React.Component {
   render() {
     return (
-      <div>
-        <h1>People Viewer</h1>
-        <Home/>
-      </div>
+        <div>
+          <h1>People Viewer</h1>
+          <Router>
+            <Switch>
+              <Route exact path="/" component={Home}></Route>
+              <Route path="/profile/:userId" component={Profile}/>
+              <Route path="/users/:userId" render={({ match }) => (
+                <Redirect to={`/profile/${match.params.userId}`}/>
+              )}/>
+              <Route component={NoMatch}/>
+            </Switch>
+          </Router>
+        </div>
     )
   }
 }
