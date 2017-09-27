@@ -23,6 +23,79 @@ import PropTypes from 'prop-types'
 import LoadingDots from './utils/LoadingDots'
 import getAddressFromCoords from './utils/getAddressFromCoords'
 
+class GeoPosition extends React.Component {
+  state = {
+    coords: {
+      latitude: null,
+      longitude: null
+    },
+    error: null
+  }
+
+  componentDidMount() {
+    this.geoId = navigator.geolocation.watchPosition(
+      (position) => {
+        this.setState({
+          coords: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          }
+        })
+      },
+      (error) => {
+        this.setState({ error })
+      }
+    )
+  }
+
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.geoId)
+  }
+
+  render() {
+    return (
+      this.props.children(this.state)
+    )
+  }
+}
+
+class GeoAddress extends React.Component {
+  static propTypes = {
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+    children: PropTypes.func.isRequired
+  }
+
+  state = {
+    address: null
+  }
+
+  componentDidMount() {
+    if (this.props.latitude && this.props.longitude)
+      this.fetch()
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      prevProps.longitude !== this.props.longitude ||
+      prevProps.latitude !== this.props.latitude
+    )
+      this.fetch()
+  }
+
+  fetch() {
+    const { latitude, longitude } = this.props
+
+    getAddressFromCoords(latitude, longitude).then(address => {
+      this.setState({ address })
+    })
+  }
+
+  render() {
+    return this.props.children(this.state)
+  }
+}
+
 class App extends React.Component {
   state = {
     coords: {
@@ -56,16 +129,32 @@ class App extends React.Component {
     return (
       <div>
         <h1>Geolocation</h1>
-        {this.state.error ? (
-          <div>Error: {this.state.error.message}</div>
-        ) : (
-          <dl>
-            <dt>Latitude</dt>
-            <dd>{this.state.coords.latitude || <LoadingDots/>}</dd>
-            <dt>Longitude</dt>
-            <dd>{this.state.coords.longitude || <LoadingDots/>}</dd>
-          </dl>
-        )}
+        <GeoPosition>
+          {state => state.error ? (
+            <div>Error: {state.error.message}</div>
+          ) : (
+            <dl>
+              <dt>Latitude</dt>
+              <dd>{state.coords.latitude || <LoadingDots/>}</dd>
+              <dt>Longitude</dt>
+              <dd>{state.coords.longitude || <LoadingDots/>}</dd>
+            </dl>
+          )}
+        </GeoPosition>
+
+        <h2>Geolocation Address</h2>
+        <GeoPosition>
+          {({ coords }) =>
+            (<GeoAddress
+              latitude={coords.latitude}
+              longitude={coords.longitude}>
+            {({ address }) => (
+                <p>{address || <LoadingDots/>}</p>
+              )
+            }
+            </GeoAddress>)
+          }
+        </GeoPosition>
       </div>
     )
   }
